@@ -1,10 +1,12 @@
+import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { getUserSettings, upsertUserSettings } from '@/lib/queries';
 import SettingsForm from '@/components/settings/SettingsForm';
 
 export default async function SettingsPage() {
   const session = await auth();
-  const userId = Number(session!.user.id);
+  if (!session?.user?.id) redirect('/auth');
+  const userId = Number(session.user.id);
   await upsertUserSettings(userId);
   const settings = await getUserSettings(userId);
 
@@ -16,7 +18,7 @@ export default async function SettingsPage() {
       <SettingsForm
         defaultCurrency={settings.currency}
         defaultLanguage={settings.language}
-        username={session!.user.name ?? ''}
+        username={session.user.name ?? ''}
       />
     </>
   );
