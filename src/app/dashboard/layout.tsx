@@ -7,7 +7,7 @@ import { getT } from '@/lib/i18n';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  if (!session) redirect('/auth');
+  if (!session?.user?.id) redirect('/auth');
 
   const settings = await getUserSettings(Number(session.user.id));
   const t = getT(settings.language);

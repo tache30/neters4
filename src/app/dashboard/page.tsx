@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import {
   getUserSettings,
@@ -22,7 +23,8 @@ export default async function DashboardPage({
   searchParams: Promise<{ welcome?: string }>;
 }) {
   const session = await auth();
-  const userId = Number(session!.user.id);
+  if (!session?.user?.id) redirect('/auth');
+  const userId = Number(session.user.id);
 
   await upsertUserSettings(userId);
 
