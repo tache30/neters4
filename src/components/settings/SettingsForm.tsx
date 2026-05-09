@@ -22,16 +22,19 @@ export default function SettingsForm({
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    await fetch('/api/settings', {
+    setSaveError(null);
+    const res = await fetch('/api/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ currency, language }),
     });
     setSaving(false);
+    if (!res.ok) { setSaveError('Eroare. Încearcă din nou.'); return; }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     router.refresh();
@@ -39,7 +42,8 @@ export default function SettingsForm({
 
   async function handleDeleteAccount() {
     setDeleting(true);
-    await fetch('/api/account', { method: 'DELETE' });
+    const res = await fetch('/api/account', { method: 'DELETE' });
+    if (!res.ok) { setDeleting(false); return; }
     await signOut({ redirectTo: '/' });
   }
 
@@ -68,6 +72,7 @@ export default function SettingsForm({
               {LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </div>
+          {saveError && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{saveError}</p>}
           <button className="btn-submit" type="submit" disabled={saving}>
             {saved ? '✓ Salvat!' : saving ? 'Se salvează...' : 'Salvează'}
           </button>

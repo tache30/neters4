@@ -27,6 +27,7 @@ export default function WishlistCard({
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [batchConfirm, setBatchConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function toggleSelect(id: number) {
     setSelected((prev) => {
@@ -39,20 +40,24 @@ export default function WishlistCard({
   async function handleDelete() {
     if (deleteId === null) return;
     setLoading(true);
-    await fetch(`/api/wishlist/${deleteId}`, { method: 'DELETE' });
+    setDeleteError(null);
+    const res = await fetch(`/api/wishlist/${deleteId}`, { method: 'DELETE' });
     setLoading(false);
+    if (!res.ok) { setDeleteError('Eroare la ștergere. Încearcă din nou.'); return; }
     setDeleteId(null);
     router.refresh();
   }
 
   async function handleBatchDelete() {
     setLoading(true);
-    await fetch('/api/wishlist/batch-delete', {
+    setDeleteError(null);
+    const res = await fetch('/api/wishlist/batch-delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids: Array.from(selected) }),
     });
     setLoading(false);
+    if (!res.ok) { setDeleteError('Eroare la ștergere. Încearcă din nou.'); setBatchConfirm(false); return; }
     setSelected(new Set());
     setManageMode(false);
     setBatchConfirm(false);
@@ -146,11 +151,12 @@ export default function WishlistCard({
 
       {showAdd && <AddWishlistModal t={t} onClose={() => setShowAdd(false)} />}
       {editItem && <AddWishlistModal t={t} editItem={editItem} onClose={() => setEditItem(undefined)} />}
+      {deleteError && <div style={{ color: 'var(--accent-red)', fontSize: '0.85rem', padding: '0.5rem', textAlign: 'center' }}>{deleteError}</div>}
       {deleteId !== null && (
-        <ConfirmDeleteModal t={t} loading={loading} onConfirm={handleDelete} onCancel={() => setDeleteId(null)} />
+        <ConfirmDeleteModal t={t} loading={loading} onConfirm={handleDelete} onCancel={() => { setDeleteId(null); setDeleteError(null); }} />
       )}
       {batchConfirm && (
-        <ConfirmDeleteModal t={t} loading={loading} onConfirm={handleBatchDelete} onCancel={() => setBatchConfirm(false)} />
+        <ConfirmDeleteModal t={t} loading={loading} onConfirm={handleBatchDelete} onCancel={() => { setBatchConfirm(false); setDeleteError(null); }} />
       )}
     </>
   );

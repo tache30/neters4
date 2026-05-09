@@ -17,13 +17,14 @@ function toDatetime(v: unknown): string {
 
 // ─── Settings ────────────────────────────────────────────────────────────────
 
+let _settingsColumnEnsured = false;
 async function ensureSettingsColumn() {
+  if (_settingsColumnEnsured) return;
   await pool.execute(`
     ALTER TABLE settings
     ADD COLUMN IF NOT EXISTS user_id INT UNSIGNED NOT NULL DEFAULT 0
-  `).catch(() => {
-    // Column may already exist on older MySQL that doesn't support IF NOT EXISTS
-  });
+  `).catch(() => {});
+  _settingsColumnEnsured = true;
 }
 
 export async function upsertUserSettings(userId: number): Promise<void> {
@@ -191,8 +192,12 @@ async function fetchRate(from: string, to: string): Promise<number> {
     if (age < TWELVE_HOURS) return parseFloat(rows[0].rate);
   }
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
   try {
-    const res = await fetch(`https://open.er-api.com/v6/latest/${from.toUpperCase()}`);
+    const res = await fetch(`https://open.er-api.com/v6/latest/${from.toUpperCase()}`, {
+      signal: controller.signal,
+    });
     if (res.ok) {
       const json = await res.json();
       const rate: number = json?.rates?.[to.toUpperCase()];
@@ -204,7 +209,11 @@ async function fetchRate(from: string, to: string): Promise<number> {
         return rate;
       }
     }
-  } catch {}
+  } catch {
+    // timeout or network error — fall through to cached/fallback value
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (rows.length > 0) return parseFloat(rows[0].rate);
 
@@ -220,11 +229,21 @@ export async function getExchangeRates(): Promise<ExchangeRates> {
 // ─── Account ──────────────────────────────────────────────────────────────────
 
 export async function deleteAccount(userId: number): Promise<void> {
-  await pool.execute('DELETE FROM transactions WHERE user_id = ?', [userId]);
-  await pool.execute('DELETE FROM wishlist WHERE user_id = ?', [userId]);
-  await pool.execute('DELETE FROM recurring_payments WHERE user_id = ?', [userId]);
-  await pool.execute('DELETE FROM settings WHERE user_id = ?', [userId]);
-  await pool.execute('DELETE FROM users WHERE id = ?', [userId]);
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    await conn.execute('DELETE FROM transactions WHERE user_id = ?', [userId]);
+    await conn.execute('DELETE FROM wishlist WHERE user_id = ?', [userId]);
+    await conn.execute('DELETE FROM recurring_payments WHERE user_id = ?', [userId]);
+    await conn.execute('DELETE FROM settings WHERE user_id = ?', [userId]);
+    await conn.execute('DELETE FROM users WHERE id = ?', [userId]);
+    await conn.commit();
+  } catch (e) {
+    await conn.rollback();
+    throw e;
+  } finally {
+    conn.release();
+  }
 }
 
 // ─── Users (for auth) ─────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default async function HomePage() {
   const session = await auth();
-  if (session) redirect('/dashboard');
+  if (session?.user?.id) redirect('/dashboard');
 
   return (
     <div className="landing-page">

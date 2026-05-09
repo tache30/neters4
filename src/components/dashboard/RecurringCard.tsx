@@ -19,12 +19,15 @@ export default function RecurringCard({
   const [showAdd, setShowAdd] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleDelete() {
     if (deleteId === null) return;
     setLoading(true);
-    await fetch(`/api/recurring/${deleteId}`, { method: 'DELETE' });
+    setDeleteError(null);
+    const res = await fetch(`/api/recurring/${deleteId}`, { method: 'DELETE' });
     setLoading(false);
+    if (!res.ok) { setDeleteError('Eroare la ștergere. Încearcă din nou.'); return; }
     setDeleteId(null);
     router.refresh();
   }
@@ -73,8 +76,9 @@ export default function RecurringCard({
       </div>
 
       {showAdd && <AddRecurringModal t={t} onClose={() => setShowAdd(false)} />}
+      {deleteError && <div style={{ color: 'var(--accent-red)', fontSize: '0.85rem', padding: '0.5rem', textAlign: 'center' }}>{deleteError}</div>}
       {deleteId !== null && (
-        <ConfirmDeleteModal t={t} loading={loading} onConfirm={handleDelete} onCancel={() => setDeleteId(null)} />
+        <ConfirmDeleteModal t={t} loading={loading} onConfirm={handleDelete} onCancel={() => { setDeleteId(null); setDeleteError(null); }} />
       )}
     </>
   );

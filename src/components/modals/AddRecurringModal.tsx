@@ -6,13 +6,15 @@ import type { T } from '@/lib/i18n';
 export default function AddRecurringModal({ t, onClose }: { t: T; onClose: () => void }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const today = new Date().toISOString().slice(0, 10);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     const fd = new FormData(e.currentTarget);
-    await fetch('/api/recurring', {
+    const res = await fetch('/api/recurring', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -23,6 +25,7 @@ export default function AddRecurringModal({ t, onClose }: { t: T; onClose: () =>
       }),
     });
     setLoading(false);
+    if (!res.ok) { setError('Eroare. Încearcă din nou.'); return; }
     onClose();
     router.refresh();
   }
@@ -53,6 +56,7 @@ export default function AddRecurringModal({ t, onClose }: { t: T; onClose: () =>
               <option value="yearly">{t.yearly}</option>
             </select>
           </div>
+          {error && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{error}</p>}
           <button className="btn-submit" type="submit" disabled={loading}>
             {loading ? '...' : t.save}
           </button>

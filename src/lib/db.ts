@@ -19,8 +19,6 @@ const pool =
     dateStrings: true,
   });
 
-if (process.env.NODE_ENV !== 'production') {
-  global._mysqlPool = pool;
-}
+global._mysqlPool = pool;
 
 export default pool;

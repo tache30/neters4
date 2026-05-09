@@ -48,7 +48,7 @@ export default async function DashboardPage({
 
   return (
     <>
-      {welcome === '1' && <WelcomeScreen username={session!.user.name ?? ''} />}
+      {welcome === '1' && <WelcomeScreen username={session.user.name ?? ''} />}
 
       <div className="header">
         <h1>{t.dashboard}</h1>
