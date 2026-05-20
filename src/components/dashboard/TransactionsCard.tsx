@@ -2,7 +2,12 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Transaction } from '@/types';
+import { TRANSACTION_CATEGORIES } from '@/types';
 import type { T } from '@/lib/i18n';
+
+function getCategoryEmoji(category: string): string {
+  return TRANSACTION_CATEGORIES.find((c) => c.key === category)?.emoji ?? '📦';
+}
 import AddTransactionModal from '@/components/modals/AddTransactionModal';
 import ConfirmDeleteModal from '@/components/modals/ConfirmDeleteModal';
 
@@ -136,8 +141,9 @@ export default function TransactionsCard({
             ) : (
               dayTxs.map((tx) => (
                 <div key={tx.id} className="transaction-item">
-                  <div className={`transaction-icon ${tx.type === 'income' ? 't-icon-income' : 't-icon-expense'}`}>
-                    <ion-icon name={tx.type === 'income' ? 'arrow-up-outline' : 'arrow-down-outline'} />
+                  <div className={`transaction-icon ${tx.type === 'income' ? 't-icon-income' : 't-icon-expense'}`}
+                    style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {getCategoryEmoji(tx.category)}
                   </div>
                   <div className="transaction-info">
                     <div className={`transaction-amount ${tx.type === 'income' ? 'amount-income' : 'amount-expense'}`}>

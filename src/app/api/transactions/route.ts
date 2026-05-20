@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { title, amount, date, type } = await req.json();
+  const { title, amount, date, type, category } = await req.json();
   const parsedAmount = parseFloat(amount);
 
   if (
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
     amount: parsedAmount,
     date,
     type,
+    category: typeof category === 'string' && category.trim() ? category.trim() : 'other',
   });
   return NextResponse.json({ ok: true });
 }

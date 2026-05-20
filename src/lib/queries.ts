@@ -66,9 +66,20 @@ export async function updateSettings(
 
 // ─── Transactions ─────────────────────────────────────────────────────────────
 
+let _categoryColumnEnsured = false;
+async function ensureCategoryColumn() {
+  if (_categoryColumnEnsured) return;
+  await pool.execute(`
+    ALTER TABLE transactions
+    ADD COLUMN IF NOT EXISTS category VARCHAR(50) NOT NULL DEFAULT 'other'
+  `).catch(() => {});
+  _categoryColumnEnsured = true;
+}
+
 export async function getTransactions(userId: number): Promise<Transaction[]> {
+  await ensureCategoryColumn();
   const [rows] = await pool.execute<RowDataPacket[]>(
-    'SELECT id, title, amount, transaction_date, type, created_at FROM transactions WHERE user_id = ? ORDER BY transaction_date ASC, id ASC',
+    'SELECT id, title, amount, transaction_date, type, category, created_at FROM transactions WHERE user_id = ? ORDER BY transaction_date ASC, id ASC',
     [userId]
   );
   return rows.map((r) => ({
@@ -77,17 +88,19 @@ export async function getTransactions(userId: number): Promise<Transaction[]> {
     amount: r.amount,
     transaction_date: toDate(r.transaction_date),
     type: r.type,
+    category: r.category ?? 'other',
     created_at: toDatetime(r.created_at),
   })) as Transaction[];
 }
 
 export async function addTransaction(
   userId: number,
-  data: { title: string; amount: number; date: string; type: 'income' | 'expense' }
+  data: { title: string; amount: number; date: string; type: 'income' | 'expense'; category?: string }
 ): Promise<void> {
+  await ensureCategoryColumn();
   await pool.execute(
-    'INSERT INTO transactions (user_id, title, amount, transaction_date, type) VALUES (?, ?, ?, ?, ?)',
-    [userId, data.title, data.amount, data.date, data.type]
+    'INSERT INTO transactions (user_id, title, amount, transaction_date, type, category) VALUES (?, ?, ?, ?, ?, ?)',
+    [userId, data.title, data.amount, data.date, data.type, data.category ?? 'other']
   );
 }
 

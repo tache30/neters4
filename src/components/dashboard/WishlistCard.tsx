@@ -136,10 +136,20 @@ export default function WishlistCard({
                     )}
                   </div>
                   <div className="progress-bar-container">
-                    <div className="progress-fill" style={{ width: `${pct}%` }} />
+                    <div
+                      className="progress-fill"
+                      style={{
+                        width: `${pct}%`,
+                        background: pct >= 100
+                          ? 'linear-gradient(90deg, #00e5a0, #00b377)'
+                          : 'linear-gradient(90deg, var(--accent-purple), #6366f1)',
+                      }}
+                    />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                    <span>{pct.toFixed(0)}% {t.completed}</span>
+                    <span style={{ color: pct >= 100 ? 'var(--accent-green)' : 'inherit' }}>
+                      {pct >= 100 ? '🎉 ' : ''}{pct.toFixed(0)}% {t.completed}
+                    </span>
                     <span>{symbol}{remaining.toLocaleString('ro-RO', { minimumFractionDigits: 2 })} {t.remaining}</span>
                   </div>
                 </div>

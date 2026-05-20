@@ -10,7 +10,7 @@ export default function WelcomeScreen({ username }: { username: string }) {
     const t = setTimeout(() => {
       setVisible(false);
       router.replace('/dashboard');
-    }, 3000);
+    }, 3500);
     return () => clearTimeout(t);
   }, [router]);
 
@@ -18,8 +18,13 @@ export default function WelcomeScreen({ username }: { username: string }) {
 
   return (
     <div className="welcome-screen" onClick={() => { setVisible(false); router.replace('/dashboard'); }}>
-      <div className="welcome-text">Bun venit, {username}! 👋</div>
-      <div className="welcome-subtext">Contul tău este pregătit.</div>
+      <div className="welcome-text">Hey, {username}! 👋</div>
+      <div className="welcome-subtext" style={{ marginTop: '0.5rem' }}>
+        Bine ai venit la Neters — locul unde banii tăi devin mai deștepți.
+      </div>
+      <div style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: 'rgba(233,213,255,0.6)' }}>
+        Adaugă prima tranzacție sau setează un obiectiv de economii. 🚀
+      </div>
     </div>
   );
 }

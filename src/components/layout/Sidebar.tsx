@@ -7,26 +7,26 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <Link href="/dashboard" className="brand">
-        <ion-icon name="wallet-outline" />
+        <ion-icon name="flash-outline" />
         neters
       </Link>
       <ul className="nav-links">
         <li>
           <Link href="/dashboard" className={pathname === '/dashboard' ? 'active' : ''}>
-            <ion-icon name="grid-outline" />
-            Dashboard
+            <ion-icon name="home-outline" />
+            Acasă
           </Link>
         </li>
         <li>
           <Link href="/dashboard/settings" className={pathname === '/dashboard/settings' ? 'active' : ''}>
-            <ion-icon name="settings-outline" />
-            Setări
+            <ion-icon name="person-outline" />
+            Profil
           </Link>
         </li>
       </ul>
       <div className="get-pro">
-        <h3>🏦 Neters</h3>
-        <p>Finanțe personale simple și eficiente.</p>
+        <h3>⚡ Neters</h3>
+        <p>Banii tăi, pe limba ta. 💪</p>
       </div>
     </aside>
   );

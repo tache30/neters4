@@ -65,7 +65,8 @@ export default function ChatDrawer({ t }: { t: T }) {
         <div className="chat-messages">
           {messages.length === 0 && (
             <div className="message ai">
-              Bună! Sunt asistentul tău bancar Neters. Cu ce te pot ajuta? 💡
+              Hey! 👋 Sunt Neters AI — prietenul tău financiar.<br/>
+              Întreabă-mă despre economii, abonamente, obiective sau orice legat de banii tăi. 🚀
             </div>
           )}
           {messages.map((m, i) => (
